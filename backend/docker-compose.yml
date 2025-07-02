@@ -1,21 +1,24 @@
+version: "3.9"
 services:
-  fastapi:
+  api:
     build: .
     ports:
       - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/firebase-adminsdk.json
     volumes:
-      - .:/app
-    env_file:
-      - .env
+      - ./app:/app
     depends_on:
-      - mongo
+      - mongodb
 
-  mongo:
-    image: mongo
+  mongodb:
+    image: mongo:6
+    container_name: healthwise-mongo
     ports:
       - "27017:27017"
     volumes:
-      - mongodb_data:/data/db
+      - mongo-data:/data/db
 
 volumes:
-  mongodb_data:
+  mongo-data:
