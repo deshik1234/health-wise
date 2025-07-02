@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   api:
     build: .
@@ -8,7 +9,8 @@ services:
       - MONGO_URI=mongodb://mongodb:27017
       - GOOGLE_APPLICATION_CREDENTIALS=/app/firebase-adminsdk.json
     volumes:
-      - ./app:/app
+    - .:/app
+    - ./firebase-adminsdk.json:/app/app/firebase-adminsdk.json  # 👈 this line!
     depends_on:
       - mongodb
 
