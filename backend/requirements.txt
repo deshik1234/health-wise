@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+python-jose
+pytesseract
+pdf2image
+Pillow
+python-dotenv
+passlib[bcrypt]
