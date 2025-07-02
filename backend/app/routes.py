@@ -1,11 +1,8 @@
-from fastapi import APIRouter, UploadFile, File, Depends, Form, HTTPException
-from fastapi.responses import JSONResponse
-from app.auth import verify_token, authenticate_user, register_user
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from app.auth import verify_token
 from app.ocr import extract_health_data
 from app.database import reports_collection
 from app.models import report_doc
-from jose import jwt
-import os
 from typing import List
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -13,22 +10,7 @@ from collections import defaultdict
 
 router = APIRouter()
 
-# ✅ Register new user
-@router.post("/register")
-async def register(username: str = Form(...), password: str = Form(...)):
-    await register_user(username, password)
-    return {"message": f"User '{username}' registered successfully"}
-
-# ✅ Login and return JWT token
-@router.post("/login")
-async def login(username: str = Form(...), password: str = Form(...)):
-    if not await authenticate_user(username, password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    token = jwt.encode({"sub": username}, os.getenv("SECRET_KEY"), algorithm="HS256")
-    return {"access_token": token, "token_type": "bearer"}
-
-# ✅ Upload report (PDF/image), run OCR, save to DB
+# 📤 Upload report (PDF/image), run OCR, save to DB
 @router.post("/upload")
 async def upload_report(
     file: UploadFile = File(...),
@@ -46,6 +28,7 @@ async def upload_report(
         "extracted": result
     }
 
+# 📚 Fetch all user reports
 @router.get("/reports")
 async def get_user_reports(current_user: str = Depends(verify_token)):
     cursor = reports_collection.find({"owner": current_user})
@@ -61,7 +44,7 @@ async def get_user_reports(current_user: str = Depends(verify_token)):
         raise HTTPException(status_code=404, detail="No reports found")
     return {"user": current_user, "reports": reports}
 
-
+# 📈 Get health data trends over time
 @router.get("/trends")
 async def get_health_trends(current_user: str = Depends(verify_token)):
     cursor = reports_collection.find({"owner": current_user}).sort("timestamp", 1)
